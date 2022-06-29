@@ -15,7 +15,7 @@ Deseamos implementar un sistema de turnos como el que existe en los hospitales, 
 ### server.js
 1. El servidor debe poder escuchar el evento 'pedir-turno' de cualquier cliente
 2. El servidor debe generar un número de ticket aleatorio. Podéis utilizar este paquete de terceros: https://www.npmjs.com/package/random-number
-3. En el array usernames, buscar el usuario cuyo id==socket.id; y asociarle el número de ticket. A esta nueva propiedad le podemos llamar **ticket**
+3. En el array usernames, añadir un nuevo elemento al array de **usernames**, con dos propiedades, el socket.id y el número de ticket
 4. Debemos informar al cliente de su número de ticket. Lo podemos hacer emitiendo un evento, solo al cliente mediante **socket.emit**. Podemos llamar al evento 'enviar-numero-turno'
 
 ### cliente.html
@@ -44,6 +44,8 @@ Deseamos implementar un sistema de turnos como el que existe en los hospitales, 
 
 1. El cliente debe recibir el evento **enviar-turno** y colocar el número de turno en el DOM correspondiente
 2. El cliente debe recibir el evento **actualizar-cola**. Es un array de objetos, con dos propiedades, el id del socket y su núemero de ticket. Generar tantos `<article>` como elementos tiene el array, y añadirlos en el contenedor #queue 
+
+### Requisito 4 - El cliente puede aceptar su turno cuando le toque
 
 ## Requisito  Bonus 
 
