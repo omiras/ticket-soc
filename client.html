@@ -15,14 +15,15 @@
         article:first-of-type {
             border: 2px solid yellowgreen;
         }
+
+        article {
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
     <hr>
-    <div class="container" id="queue">
-
-    </div>
     <div class="container">
         <button id="taketicket">Pedir Turno</button>
         <button id="claimticket" disabled>¡Es mi turno!</button>
@@ -31,13 +32,69 @@
     <div class="container">
         <h2 id="ticketNumber">Su número de turno es: <span style="color:chocolate"></span></h2>
     </div>
+    <hr>
+    <div class="container" id="queue">
+
+    </div>
+
+    <!-- Es necesario para podernos conectar con el socket del servidor -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // inicializar el socket.io, y obtenemos un objeto que posee métodos para comunicarnos con el server (enviar y recibir eventos)
         var socket = io();
 
         let btnTakeTicket = document.querySelector('#taketicket');
         let claimTicket = document.querySelector('#claimticket');
 
+        btnTakeTicket.addEventListener('click', () => {
+            //  Enviar el evento tipo 'pedir-turno' al servidor
+            socket.emit('pedir-turno');
+
+            // Deshabilitar el botón 'btnTakeTicket'
+            btnTakeTicket.setAttribute('disabled', '');
+        });
+
+        claimTicket.addEventListener('click', () => {
+            socket.emit('reclamar-turno');
+        });
+
+        socket.on('confirmar-turno', () => {
+            document.querySelector("#ticketNumber").textContent = "Has sido atentido por el funcionario/a del SOC";
+            document.querySelector("#ticketNumber").style.color = "green";
+        })
+
+        //  Iteración1. Escuchar el evento 'enviar-turno' del servidor; y recibir por parámetro el número de ticket. Ponerlo en el lugar adecuado del DOM '#ticketNumber span'
+        socket.on('enviar-turno', (numTicket) => {
+            document.querySelector("#ticketNumber span").textContent = numTicket;
+        })
+
+        // TODO: Iteración 3. El cliente debe recibir todo el array de usernames a través del evento 'actualizar-cola'. Es un array de objetos, con dos propiedades, el id del socket y su núemero de ticket. Generar tantos <article> como elementos tiene el array, y añadirlos en el contenedor #queue
+        socket.on('actualizar-cola', (usernames) => {
+
+
+            console.log("Usuarios recibidos del servidor: ", usernames);
+            document.querySelector('#queue').innerHTML = "";
+
+
+            // Si no hay nadie en cola, no hacer nada más
+            if (usernames.length == 0 || usernames[0].id != socket.id) {
+                claimTicket.setAttribute('disabled', '');
+                return;
+            }
+
+
+            // Dectectar si el primer elemento del array (el del turno siguiente) somos nosotros. En tal caso, habilitar el botón de "¡Es mi turno!"
+            if (usernames[0].id == socket.id) {
+                claimTicket.removeAttribute('disabled');
+            }
+
+            // TODO: Actualizar el DOM con la información del array usernames
+            usernames.forEach(user => {
+                let ticket = document.createElement('article');
+                ticket.textContent = user.ticket;
+                document.querySelector('#queue').appendChild(ticket);
+            });
+        });
 
     </script>
 </body>
